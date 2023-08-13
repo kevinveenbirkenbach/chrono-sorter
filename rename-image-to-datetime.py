@@ -2,8 +2,14 @@ import pyexifinfo as pxi
 from datetime import datetime
 import os
 import sys
+import re
 
 def rename_image(file_path, preview=False):
+    # Check if the filename is already in the desired format
+    filename = os.path.basename(file_path)
+    if re.match(r'^\d{8}_\d{6}(\(\d+\))?(\.\w+)?$', filename):
+        return
+
     # EXIF-Daten extrahieren
     exif_data = pxi.get_json(file_path)[0]
 
@@ -36,17 +42,21 @@ def rename_image(file_path, preview=False):
     min_date = min(dates, default=None)
     if min_date:
         new_name = min_date.strftime("%Y%m%d_%H%M%S")
-
+        count = 0
         # Dateiendung beibehalten
         file_extension = os.path.splitext(file_path)[1]
         new_file_path = os.path.join(os.path.dirname(file_path), new_name + file_extension)
-        if file_path != new_file_path:
-            # Datei umbenennen, wenn Vorschau nicht aktiviert ist
-            if not preview:
-                os.rename(file_path, new_file_path)
-                print(f"File renamed to {new_file_path}")
-            else:
-                print(f"Preview: {file_path} would be renamed to {new_file_path}")
+
+        while os.path.exists(new_file_path):
+            count += 1
+            new_file_path = os.path.join(os.path.dirname(file_path), f"{new_name}({count}){file_extension}")
+
+        # Datei umbenennen, wenn Vorschau nicht aktiviert ist
+        if not preview:
+            os.rename(file_path, new_file_path)
+            print(f"File renamed to {new_file_path}")
+        else:
+            print(f"Preview: {file_path} would be renamed to {new_file_path}")
     else:
         print(f"No valid dates found in {file_path}")
 
