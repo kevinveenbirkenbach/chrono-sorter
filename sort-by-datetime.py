@@ -5,22 +5,49 @@ import argparse
 from datetime import datetime
 import os
 import sys
+import time
+
+# Define the possible update tags
+UPDATE_TAGS = [
+    'EXIF:DateTimeOriginal',
+    'EXIF:DateTimeDigitized',
+    'File:FileModifyDate',
+    'File:FileCreateDate',
+    'Composite:DateTimeCreated'
+]
 
 def update_file_create_date(file_path, min_date, update_tags, preview=False):
-    new_file_create_date = min_date.strftime("%Y:%m:%d %H:%M:%S") if min_date else None
+    # Define a mapping from the provided keys to the correct exiftool tags
+    tag_mapping = {tag: tag.split(":")[1] for tag in UPDATE_TAGS if ":" in tag}
 
-    if new_file_create_date and update_tags:
-        with pet.ExifTool() as et:
-            for tag in update_tags:
-                current_date = et.get_tag(tag, file_path)
+    new_file_create_date = min_date.strftime("%Y:%m:%d %H:%M:%S")
+
+    if not preview:
+        # Define the new access time and modification time
+        new_access_time = time.mktime(min_date.timetuple())
+        new_modification_time = time.mktime(min_date.timetuple())
+        # Apply the new times
+        os.utime(file_path, (new_access_time, new_modification_time))
+    else:
+        print(f"Preview: Access, Modificataion and time would be set to {new_file_create_date}")
+
+        
+    with pet.ExifTool() as et:
+        for tag_key in update_tags:
+            exiftool_tag = tag_mapping.get(tag_key)
+            if exiftool_tag:
+                current_date = et.get_tag(tag_key, file_path)
                 if current_date != new_file_create_date:
                     if not preview:
-                        et.execute(f'-{tag}={new_file_create_date}'.encode('utf-8'), file_path.encode('utf-8'))
-                        print(f"{tag} set from {current_date} to {new_file_create_date}")
+                        command = f"-{exiftool_tag}={new_file_create_date}"
+                        et.execute(command.encode('utf-8'), file_path.encode('utf-8'))
+                        print(f"{tag_key} set from {current_date} to {new_file_create_date}")
                     else:
-                        print(f"Preview: {tag} would be set from {current_date} to {new_file_create_date}")
+                        print(f"Preview: {tag_key} would be set from {current_date} to {new_file_create_date}")
                 else:
-                    print(f"Skipped updating {tag}.")
+                    print(f"Skipped updating {tag_key}.")
+            else:
+                raise ValueError(f"Unknown tag: {tag_key}")
 
 
 def rename_image(file_path, min_date, preview=False):
@@ -58,16 +85,11 @@ def process_file(file_path, rename, update_date, preview):
     ]
     
     # List of possible date values
-    date_values = [
-        exif_data.get("EXIF:DateTimeOriginal"),
-        exif_data.get("EXIF:DateTimeDigitized"),
-        exif_data.get("File:FileModifyDate"),
-        exif_data.get("File:FileCreateDate"),
-        exif_data.get("Composite:DateTimeCreated"),
-    ]
+    date_values = [exif_data.get(tag) for tag in UPDATE_TAGS]
 
     # Convert date values to date objects
-    dates = []
+    dates = [datetime.fromtimestamp(func(file_path)) for func in (os.path.getctime, os.path.getmtime, os.path.getatime)]
+    
     for date_value in date_values:
         if date_value:
             for date_format in date_formats:
@@ -100,15 +122,10 @@ def main():
     parser = argparse.ArgumentParser(description="Sort media files by date.")
     parser.add_argument('folder_path', type=str, help="Path to the folder containing media files.")
     parser.add_argument('--rename', action='store_true', help="Rename the media files.")
-    parser.add_argument('--update-date', nargs='*', choices=[
-    'EXIF:DateTimeOriginal',
-    'EXIF:DateTimeDigitized',
-    'File:FileModifyDate',
-    'File:FileCreateDate',
-    'Composite:DateTimeCreated'
-], help="Update the file creation date(s). Specify one or more of the following options: EXIF:DateTimeOriginal, EXIF:DateTimeDigitized, File:FileModifyDate, File:FileCreateDate, Composite:DateTimeCreated")
+    UPDATE_TAGS_HELP = ", ".join(UPDATE_TAGS)
+    parser.add_argument('--update-date', nargs='*', choices=UPDATE_TAGS, default=['File:FileCreateDate'],
+        help=f"Update the file creation date(s). Specify one or more of the following options: {UPDATE_TAGS_HELP}.")
     parser.add_argument('--preview', action='store_true', help="Preview the changes without applying them.")
-    
     args = parser.parse_args()
     process_folder(args.folder_path, args.rename, args.update_date, args.preview)
 
