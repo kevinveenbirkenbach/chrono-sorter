@@ -35,18 +35,18 @@ def rename_image(file_path, preview=False):
     # Niedrigstes Datum finden
     min_date = min(dates, default=None)
     if min_date:
-        new_name = min_date.strftime("%Y%m%d%H%M%S")
+        new_name = min_date.strftime("%Y%m%d_%H%M%S")
 
         # Dateiendung beibehalten
         file_extension = os.path.splitext(file_path)[1]
         new_file_path = os.path.join(os.path.dirname(file_path), new_name + file_extension)
-
-        # Datei umbenennen, wenn Vorschau nicht aktiviert ist
-        if not preview:
-            os.rename(file_path, new_file_path)
-            print(f"File renamed to {new_file_path}")
-        else:
-            print(f"Preview: {file_path} would be renamed to {new_file_path}")
+        if file_path != new_file_path:
+            # Datei umbenennen, wenn Vorschau nicht aktiviert ist
+            if not preview:
+                os.rename(file_path, new_file_path)
+                print(f"File renamed to {new_file_path}")
+            else:
+                print(f"Preview: {file_path} would be renamed to {new_file_path}")
     else:
         print(f"No valid dates found in {file_path}")
 
@@ -58,7 +58,6 @@ def process_folder(folder_path, preview=False):
                 rename_image(file_path, preview)
 
 if __name__ == "__main__":
-    folder_path = sys.argv[1] if len(sys.argv) > 1 else "path/to/your/folder"
+    folder_path = sys.argv[1]
     preview = '--preview' in sys.argv
-
     process_folder(folder_path, preview)
