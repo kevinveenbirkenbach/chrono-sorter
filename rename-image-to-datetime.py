@@ -54,7 +54,7 @@ def rename_image(file_path, preview=False):
         # Datei umbenennen, wenn Vorschau nicht aktiviert ist
         if not preview:
             os.rename(file_path, new_file_path)
-            print(f"File renamed to {new_file_path}")
+            print(f"File {file_path} renamed to {new_file_path}")
         else:
             print(f"Preview: {file_path} would be renamed to {new_file_path}")
     else:
