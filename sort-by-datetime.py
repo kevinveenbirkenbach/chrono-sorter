@@ -1,6 +1,7 @@
 import pyexifinfo as pxi
 import exiftool as pet
 import re
+import argparse
 from datetime import datetime
 import os
 import sys
@@ -95,9 +96,15 @@ def process_folder(folder_path, rename, update_date, preview=False):
                 file_path = os.path.join(root, filename)
                 process_file(file_path, rename, update_date, preview)
 
+def main():
+    parser = argparse.ArgumentParser(description="Sort media files by date.")
+    parser.add_argument('folder_path', type=str, help="Path to the folder containing media files.")
+    parser.add_argument('--rename', action='store_true', help="Rename the media files.")
+    parser.add_argument('--update-date', action='store_true', help="Update the file creation date.")
+    parser.add_argument('--preview', action='store_true', help="Preview the changes without applying them.")
+    
+    args = parser.parse_args()
+    process_folder(args.folder_path, args.rename, args.update_date, args.preview)
+
 if __name__ == "__main__":
-    folder_path = sys.argv[1]
-    rename = '--rename' in sys.argv
-    update_date = '--update-date' in sys.argv
-    preview = '--preview' in sys.argv
-    process_folder(folder_path, rename, update_date, preview)
+    main()
