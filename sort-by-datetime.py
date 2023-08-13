@@ -6,21 +6,21 @@ from datetime import datetime
 import os
 import sys
 
-def update_file_create_date(file_path, min_date, preview=False):
-    with pet.ExifTool() as et:
-        current_file_create_date = et.get_tag('File:FileCreateDate', file_path)
+def update_file_create_date(file_path, min_date, update_tags, preview=False):
+    new_file_create_date = min_date.strftime("%Y:%m:%d %H:%M:%S") if min_date else None
 
-    if min_date:
-        new_file_create_date = min_date.strftime("%Y:%m:%d %H:%M:%S")
-        if current_file_create_date != new_file_create_date:
-            if not preview:
-                with pet.ExifTool() as et:
-                    et.execute(f'-FileCreateDate={new_file_create_date}'.encode('utf-8'), file_path.encode('utf-8'))
-                print(f"FileCreateDate set from {current_file_create_date} to {new_file_create_date}")
-            else:
-                print(f"Preview: FileCreateDate would be set from {current_file_create_date} to {new_file_create_date}")
-        else:
-            print("Skipped update file create date.")
+    if new_file_create_date and update_tags:
+        with pet.ExifTool() as et:
+            for tag in update_tags:
+                current_date = et.get_tag(tag, file_path)
+                if current_date != new_file_create_date:
+                    if not preview:
+                        et.execute(f'-{tag}={new_file_create_date}'.encode('utf-8'), file_path.encode('utf-8'))
+                        print(f"{tag} set from {current_date} to {new_file_create_date}")
+                    else:
+                        print(f"Preview: {tag} would be set from {current_date} to {new_file_create_date}")
+                else:
+                    print(f"Skipped updating {tag}.")
 
 
 def rename_image(file_path, min_date, preview=False):
@@ -87,7 +87,7 @@ def process_file(file_path, rename, update_date, preview):
         rename_image(file_path, min_date, preview)
 
     if update_date:
-        update_file_create_date(file_path, min_date, preview)
+        update_file_create_date(file_path, min_date, update_date, preview)
 
 def process_folder(folder_path, rename, update_date, preview=False):
     for root, _, files in os.walk(folder_path):
@@ -100,7 +100,13 @@ def main():
     parser = argparse.ArgumentParser(description="Sort media files by date.")
     parser.add_argument('folder_path', type=str, help="Path to the folder containing media files.")
     parser.add_argument('--rename', action='store_true', help="Rename the media files.")
-    parser.add_argument('--update-date', action='store_true', help="Update the file creation date.")
+    parser.add_argument('--update-date', nargs='*', choices=[
+    'EXIF:DateTimeOriginal',
+    'EXIF:DateTimeDigitized',
+    'File:FileModifyDate',
+    'File:FileCreateDate',
+    'Composite:DateTimeCreated'
+], help="Update the file creation date(s). Specify one or more of the following options: EXIF:DateTimeOriginal, EXIF:DateTimeDigitized, File:FileModifyDate, File:FileCreateDate, Composite:DateTimeCreated")
     parser.add_argument('--preview', action='store_true', help="Preview the changes without applying them.")
     
     args = parser.parse_args()
