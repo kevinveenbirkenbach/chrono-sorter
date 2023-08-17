@@ -105,11 +105,11 @@ def process_file(file_path, rename, update_date, preview):
 
     print(f"Checking file: {file_path}")
 
-    if rename:
-        rename_image(file_path, min_date, preview)
-
     if update_date:
         update_file_create_date(file_path, min_date, update_date, preview)
+
+    if rename:
+        rename_image(file_path, min_date, preview)
 
 def process_folder(folder_path, rename, update_date, preview=False):
     for root, _, files in os.walk(folder_path):
