@@ -30,7 +30,7 @@ This tool is designed to automatically move video files located in the "Pictures
 ### Usage
 
 ```bash
-python move-to-correct-folder.py --source [SOURCE_PATH] [OPTIONS]
+python move-to-correct-folder.py [OPTIONS] [SOURCE_PATH]
 ```
 
 #### Parameters:
@@ -46,13 +46,13 @@ python move-to-correct-folder.py --source [SOURCE_PATH] [OPTIONS]
 To move files from a Pictures folder to their corresponding Videos folder:
 
 ```bash
-python move-to-correct-folder.py --source ~/Pictures/2023 --verbose
+python move-to-correct-folder.py --verbose ~/Pictures/2023
 ```
 
 To preview the files that would be moved from a Videos folder to their corresponding Pictures folder:
 
 ```bash
-python move-to-correct-folder.py --source ~/Videos/2023 --preview
+python move-to-correct-folder.py --preview ~/Videos/2023 
 ```
 
 ### Note

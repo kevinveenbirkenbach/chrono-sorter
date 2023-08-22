@@ -34,10 +34,10 @@ def move_files(source_dir, verbose=False, preview=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Move files from Pictures to Videos and vice-versa.")
-    parser.add_argument("--source", required=True, help="Source directory (either within 'Pictures' or 'Videos').")
+    parser.add_argument('folder_path', type=str, help="Source directory (either within 'Pictures' or 'Videos').")
     parser.add_argument("--verbose", action="store_true", help="Print verbose output.")
     parser.add_argument("--preview", action="store_true", help="Preview the moves without actually moving files.")
 
     args = parser.parse_args()
 
-    move_files(args.source, args.verbose, args.preview)
+    move_files(args.folder_path, args.verbose, args.preview)
