@@ -11,8 +11,9 @@ This tool is designed to rename image files in a directory based on the earliest
 2. **Install Dependencies:** This tool requires libraries. You can install them using the following commands:
    ```bash
    pip install pillow
+   pacman -S perl-image-exiftool
    pip install pyexifinfo
-   pip install pyexiftool
+   pip install git+https://github.com/smarnach/pyexiftool.git
    ```
 3. **Download the Script:** Place the script in the directory where you want to run it.
 
