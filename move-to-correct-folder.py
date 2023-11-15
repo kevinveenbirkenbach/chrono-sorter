@@ -15,7 +15,7 @@ def move_files(source_dir, verbose=False, preview=False):
 
     for dirpath, _, filenames in os.walk(source_dir):
         for filename in filenames:
-            if any(filename.endswith(ext) for ext in file_exts):
+            if any(filename.lower().endswith(ext) for ext in file_exts):
                 source_path = os.path.join(dirpath, filename)
                 relative_path = os.path.relpath(dirpath, source_dir)
                 target_dir = os.path.join(target_root, relative_path)
